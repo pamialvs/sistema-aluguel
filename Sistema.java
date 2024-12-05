@@ -1,120 +1,94 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Sistema {
 
-    // Instâncias únicas dos módulos
+    // Instância única (Singleton)
     private static Sistema instancia;
+
+    // Mapas para gerenciar entidades do sistema
+    private Map<String, Cliente> clientes;
+
+    // Instâncias de outros módulos
     private ModuloAluguel moduloAluguel;
-    private ModuloPedido moduloPedido;
-    
-    // Listas para armazenar clientes, pedidos e aluguéis
-    private List<Cliente> clientes;
-    private List<Pedido> pedidos;
 
     // Construtor privado para evitar instâncias externas
     private Sistema() {
-        // Inicializando os módulos
-        moduloAluguel = ModuloAluguel.getInstancia();
-        moduloPedido = ModuloPedido.getInstancia();
-        
-        // Inicializando as listas de clientes e pedidos
-        clientes = new ArrayList<>();
-        pedidos = new ArrayList<>();
+        clientes = new HashMap<>();
+        moduloAluguel = ModuloAluguel.getInstancia(); // Singleton do módulo de aluguel
     }
 
-    // Método para acessar a instância única do Sistema (Singleton)
+    // Método para obter a instância única do Sistema
     public static Sistema getInstancia() {
         if (instancia == null) {
-            instancia = new Sistema();  // Cria a instância se não existir
+            instancia = new Sistema();
         }
         return instancia;
     }
 
-    // Método para cadastrar um cliente
-    public void cadastrarCliente(Cliente cliente) {
-        clientes.add(cliente);
-        System.out.println("Cliente cadastrado com sucesso: " + cliente.getNome());
-    }
+    // ---------------------- Métodos para Gerenciar Clientes ----------------------
 
-
-    // Método para localizar um cliente
-    public Cliente localizarCliente(String idCliente) {
-        for (Cliente cliente : clientes) {
-            if (cliente.getId().equals(idCliente)) {
-                return cliente;  // Retorna o cliente encontrado
-            }
+    public void cadastrarCliente(String id, String nome, String email) {
+        if (clientes.containsKey(id)) {
+            System.out.println("Cliente já cadastrado com o ID: " + id);
+            return;
         }
-        return null;  // Retorna null se o cliente não for encontrado
+        Cliente cliente = new Cliente(id, nome, email);
+        clientes.put(id, cliente);
+        System.out.println("Cliente cadastrado: " + nome);
     }
 
-    // Método para cadastrar um pedido
-    public void cadastrarPedido(String idCliente, List<ItemPedido> itens) {
-        Cliente cliente = localizarCliente(idCliente);  // Localiza o cliente
-        if (cliente != null) {
-            Pedido pedido = new Pedido(cliente, itens);  // Cria um novo pedido
-            pedidos.add(pedido);  // Adiciona o pedido à lista de pedidos
-            System.out.println("Pedido cadastrado com sucesso para o cliente: " + idCliente);
+    public Cliente localizarCliente(String id) {
+        return clientes.get(id);
+    }
+
+    public void removerCliente(String id) {
+        if (clientes.remove(id) != null) {
+            System.out.println("Cliente removido com sucesso.");
         } else {
-            System.out.println("Cliente não encontrado!");
+            System.out.println("Cliente não encontrado.");
         }
     }
 
-    // Método para adicionar um item a um pedido
-    public void adicionarItemAoPedido(String idPedido, ItemPedido item) {
-        Pedido pedido = localizarPedido(idPedido);  // Localiza o pedido
-        if (pedido != null) {
-            pedido.adicionarItem(item);  // Adiciona o item ao pedido
-            System.out.println("Item adicionado ao pedido com ID: " + idPedido);
-        } else {
-            System.out.println("Pedido não encontrado!");
-        }
-    }
+    // ---------------------- Métodos para Módulo de Aluguel ----------------------
 
-    // Método para listar todos os pedidos cadastrados
-    public void listarPedidos() {
-        System.out.println("--- Lista de Pedidos ---");
-        if (pedidos.isEmpty()) {
-            System.out.println("Nenhum pedido cadastrado.");
-        } else {
-            for (Pedido pedido : pedidos) {
-                System.out.println(pedido);
-            }
-        }
-    }
-
-
-    // Método para localizar um pedido pelo ID
-    public Pedido localizarPedido(String idPedido) {
-        for (Pedido pedido : pedidos) {
-            if (pedido.getId().equals(idPedido)) {
-
-                return pedido;  // Retorna o pedido encontrado
-            }
-        }
-        return null;  // Retorna null se não encontrar o pedido
-    }
-
-    // Método para calcular o total de todos os pedidos
-    public double calcularTotalPedidos() {
-        double total = 0.0;
-        for (Pedido pedido : pedidos) {
-            total += pedido.calcularTotalPedido();  // Soma o total de cada pedido
-        }
-        return total;  // Retorna o total acumulado
-    }
-
-    // Métodos do Módulo de Aluguel
     public void cadastrarAluguel(String idCliente) {
-        moduloAluguel.cadastrarAluguel(idCliente);  // Chama o método de cadastro de aluguel
+        moduloAluguel.cadastrarAluguel(idCliente);
     }
 
-    public void adicionarItemAoAluguel(String idAluguel, String codProduto, int quantidade) {
-        moduloAluguel.adicionarItemAoAluguel(idAluguel, codProduto, quantidade);  // Adiciona item ao aluguel
+    public void adicionarItemAoAluguel(String idAluguel, String idProduto, int quantidade) {
+        moduloAluguel.adicionarItemAoAluguel(idAluguel, idProduto, quantidade);
     }
 
     public double calcularTotalAlugueis() {
-        return moduloAluguel.calcularTotalAlugueis();  // Retorna o total de aluguéis
+        return moduloAluguel.calcularTotalAlugueis();
     }
 
-}
+        public void adicionarLivroNaBiblioteca(String titulo, String autor, String codigo) {
+            Livro novoLivro = new Livro(codigo, titulo, autor);
+            Biblioteca.getInstancia().adicionarLivro(novoLivro); // Acesso direto ao Singleton
+        }
+    
+        public void listarLivrosDaBiblioteca() {
+            Biblioteca.getInstancia().listarLivros(); // Acesso direto ao Singleton
+        }
+    
+        public void buscarLivroNaBiblioteca(String titulo) {
+            List<Livro> resultados = Biblioteca.getInstancia().buscarLivros(titulo); // Busca
+            if (resultados.isEmpty()) {
+                System.out.println("Nenhum livro encontrado com o título: " + titulo);
+            } else {
+                System.out.println("--- Resultados da Busca ---");
+                for (Livro livro : resultados) {
+                    System.out.println(livro);
+                }
+            }
+        }
+    
+        public void removerLivroDaBiblioteca(String titulo) {
+            Biblioteca.getInstancia().removerLivro(titulo); // Acesso direto ao Singleton
+        }
+    }
+    
